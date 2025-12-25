@@ -1,6 +1,6 @@
 import { useRef, useEffect, useState, useCallback } from 'react';
 
-const GameCanvas = ({ onGameEnd, soundEnabled }) => {
+const GameCanvas = ({ onGameEnd }) => {
   const canvasRef = useRef(null);
   const animationRef = useRef(null);
   const gameStateRef = useRef({
@@ -30,52 +30,50 @@ const GameCanvas = ({ onGameEnd, soundEnabled }) => {
 
   // Initialize audio
   useEffect(() => {
-    if (soundEnabled) {
-      try {
-        audioContextRef.current = new (window.AudioContext || window.webkitAudioContext)();
-        
-        // Create simple sound effects using oscillators
-        const createSound = (frequency, duration, type = 'sine') => {
-          return () => {
-            if (!audioContextRef.current) return;
-            const oscillator = audioContextRef.current.createOscillator();
-            const gainNode = audioContextRef.current.createGain();
-            
-            oscillator.connect(gainNode);
-            gainNode.connect(audioContextRef.current.destination);
-            
-            oscillator.frequency.setValueAtTime(frequency, audioContextRef.current.currentTime);
-            oscillator.type = type;
-            
-            gainNode.gain.setValueAtTime(0.1, audioContextRef.current.currentTime);
-            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContextRef.current.currentTime + duration);
-            
-            oscillator.start(audioContextRef.current.currentTime);
-            oscillator.stop(audioContextRef.current.currentTime + duration);
-          };
+    try {
+      audioContextRef.current = new (window.AudioContext || window.webkitAudioContext)();
+      
+      // Create simple sound effects using oscillators
+      const createSound = (frequency, duration, type = 'sine') => {
+        return () => {
+          if (!audioContextRef.current) return;
+          const oscillator = audioContextRef.current.createOscillator();
+          const gainNode = audioContextRef.current.createGain();
+          
+          oscillator.connect(gainNode);
+          gainNode.connect(audioContextRef.current.destination);
+          
+          oscillator.frequency.setValueAtTime(frequency, audioContextRef.current.currentTime);
+          oscillator.type = type;
+          
+          gainNode.gain.setValueAtTime(0.1, audioContextRef.current.currentTime);
+          gainNode.gain.exponentialRampToValueAtTime(0.01, audioContextRef.current.currentTime + duration);
+          
+          oscillator.start(audioContextRef.current.currentTime);
+          oscillator.stop(audioContextRef.current.currentTime + duration);
         };
+      };
 
-        soundsRef.current = {
-          hit: createSound(800, 0.1, 'square'),
-          miss: createSound(200, 0.2, 'sawtooth'),
-          start: createSound(600, 0.3, 'sine'),
-          end: createSound(400, 0.5, 'triangle')
-        };
-      } catch (error) {
-        console.log('Audio not supported');
-      }
+      soundsRef.current = {
+        hit: createSound(800, 0.1, 'square'),
+        miss: createSound(200, 0.2, 'sawtooth'),
+        start: createSound(600, 0.3, 'sine'),
+        end: createSound(400, 0.5, 'triangle')
+      };
+    } catch (error) {
+      console.log('Audio not supported');
     }
-  }, [soundEnabled]);
+  }, []);
 
   const playSound = useCallback((soundName) => {
-    if (soundEnabled && soundsRef.current[soundName]) {
+    if (soundsRef.current[soundName]) {
       try {
         soundsRef.current[soundName]();
       } catch (error) {
         console.log('Sound play failed');
       }
     }
-  }, [soundEnabled]);
+  }, []);
 
   // Target class
   class Target {

@@ -8,7 +8,6 @@ const App = () => {
   const [gameState, setGameState] = useState('start'); // 'start', 'playing', 'gameOver'
   const [finalStats, setFinalStats] = useState(null);
   const [localScores, setLocalScores] = useState([]);
-  const [soundEnabled, setSoundEnabled] = useState(false);
 
 
   // Load local scores from localStorage
@@ -61,11 +60,6 @@ const App = () => {
 
 
 
-  // Toggle sound
-  const toggleSound = useCallback(() => {
-    setSoundEnabled(prev => !prev);
-  }, []);
-
   // Save score to Supabase
   const handleSaveToGlobal = useCallback(async () => {
     if (!finalStats) return;
@@ -97,22 +91,7 @@ const App = () => {
 
       {gameState === 'playing' && (
         <div className="game-area">
-          <GameCanvas 
-            onGameEnd={handleGameEnd} 
-            soundEnabled={soundEnabled}
-          />
-          <button 
-            className="sound-toggle"
-            onClick={toggleSound}
-            style={{
-              position: 'absolute',
-              top: '20px',
-              right: '20px',
-              zIndex: 20
-            }}
-          >
-            {soundEnabled ? '🔊' : '🔇'}
-          </button>
+          <GameCanvas onGameEnd={handleGameEnd} />
         </div>
       )}
 
