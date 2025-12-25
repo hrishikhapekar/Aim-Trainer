@@ -23,6 +23,7 @@ const GameCanvas = ({ onGameEnd }) => {
     accuracy: 0,
     combo: 0
   });
+  const [gameRunning, setGameRunning] = useState(false);
 
   // Audio context for sound effects
   const audioContextRef = useRef(null);
@@ -263,16 +264,17 @@ const GameCanvas = ({ onGameEnd }) => {
     animationRef.current = requestAnimationFrame(gameLoop);
   }, [spawnTarget]);
 
-  // Timer
+  // Timer - runs when gameRunning changes
   useEffect(() => {
     let timerInterval;
     
-    if (gameStateRef.current.gameRunning) {
+    if (gameRunning) {
       timerInterval = setInterval(() => {
         gameStateRef.current.timeLeft--;
         
         if (gameStateRef.current.timeLeft <= 0) {
           gameStateRef.current.gameRunning = false;
+          setGameRunning(false);
           playSound('end');
           
           const finalStats = {
@@ -292,7 +294,7 @@ const GameCanvas = ({ onGameEnd }) => {
     return () => {
       if (timerInterval) clearInterval(timerInterval);
     };
-  }, [onGameEnd, playSound]);
+  }, [gameRunning, onGameEnd, playSound]);
 
   // Start game
   const startGame = useCallback(() => {
@@ -311,6 +313,7 @@ const GameCanvas = ({ onGameEnd }) => {
     state.spawnRate = 1500;
     state.difficulty = 1;
 
+    setGameRunning(true);
     playSound('start');
     gameLoop();
   }, [gameLoop, playSound]);
